@@ -3,13 +3,12 @@ package nsq
 import (
 	"encoding/json"
 	"github.com/nsqio/go-nsq"
-	"github.com/spf13/cast"
 )
 
 type nsqMessage nsq.Message
 
 func (n nsqMessage) GetID() string {
-	return cast.ToString([16]byte(n.ID))
+	return string(n.ID[:])
 }
 
 func (n nsqMessage) GetTimestamp() int64 {
