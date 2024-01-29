@@ -38,6 +38,26 @@ type Message interface {
 	Body() []byte
 }
 
+type message struct {
+	topic string
+	body  []byte
+}
+
+func (m message) Topic() string {
+	return m.topic
+}
+
+func (m message) Body() []byte {
+	return m.body
+}
+
+func NewMessage(topic string, body []byte) Message {
+	return message{
+		topic: topic,
+		body:  body,
+	}
+}
+
 type Handler interface {
 	// Topic 所属topic
 	Topic() string
@@ -45,6 +65,32 @@ type Handler interface {
 	Channel() string
 	// HandleMessage 消息处理
 	HandleMessage(message ReceivedMessage) error
+}
+
+type handler struct {
+	topic   string
+	channel string
+	do      func(message ReceivedMessage) error
+}
+
+func (h handler) Topic() string {
+	return h.topic
+}
+
+func (h handler) Channel() string {
+	return h.channel
+}
+
+func (h handler) HandleMessage(message ReceivedMessage) error {
+	return h.do(message)
+}
+
+func NewHandler(topic, channel string, msgHandler func(message ReceivedMessage) error) Handler {
+	return handler{
+		topic:   topic,
+		channel: channel,
+		do:      msgHandler,
+	}
 }
 
 // New 实例化MQ客户端

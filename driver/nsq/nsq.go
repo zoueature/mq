@@ -6,6 +6,9 @@ import (
 	"github.com/zoueature/mq"
 	"github.com/zoueature/mq/config"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // nsq 消息队列是基于内存的消息队列， 不要用户关键业务的消息传递
@@ -31,15 +34,22 @@ func (c client) Consume(ctx context.Context, handler mq.Handler, concurrency int
 	if err != nil {
 		log.Fatal(err)
 	}
-	consumer.AddConcurrentHandlers(&messageHandler{}, concurrency)
+	consumer.AddConcurrentHandlers(&messageHandler{
+		mqHandler: handler,
+	}, concurrency)
 
 	err = consumer.ConnectToNSQLookupd(c.cfg.ConsumeAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	<-ctx.Done()
-	consumer.Stop()
+	// wait for signal to exit
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case <-ctx.Done():
+	case <-sigChan:
+		consumer.Stop()
+	}
 }
 
 func (c client) Push(ctx context.Context, msg mq.Message) error {
