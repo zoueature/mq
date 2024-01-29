@@ -2,7 +2,7 @@ package mq
 
 import (
 	"context"
-	"github.com/zoueature/mq/config"
+	"github.com/zoueature/config"
 )
 
 var driverMap = map[DriverId]Driver{}

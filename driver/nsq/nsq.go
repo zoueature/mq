@@ -3,8 +3,8 @@ package nsq
 import (
 	"context"
 	"github.com/nsqio/go-nsq"
+	"github.com/zoueature/config"
 	"github.com/zoueature/mq"
-	"github.com/zoueature/mq/config"
 	"log"
 	"os"
 	"os/signal"

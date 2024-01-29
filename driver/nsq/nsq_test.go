@@ -2,8 +2,8 @@ package nsq
 
 import (
 	"context"
+	"github.com/zoueature/config"
 	"github.com/zoueature/mq"
-	"github.com/zoueature/mq/config"
 	"log"
 	"testing"
 )
