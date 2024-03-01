@@ -18,18 +18,18 @@ type client struct {
 }
 
 type messageHandler struct {
-	mqHandler mq.Handler
+	mqHandler mq.MessageHandler
 }
 
 func (m *messageHandler) HandleMessage(message *nsq.Message) error {
-	return m.mqHandler.HandleMessage(nsqMessage(*message))
+	return m.mqHandler(nsqMessage(*message))
 }
 
-func (c client) Consume(ctx context.Context, handler mq.Handler, concurrency int) {
+func (c client) Consume(ctx context.Context, topic, channel string, handler mq.MessageHandler, concurrency int) error {
 	cfg := nsq.NewConfig()
-	consumer, err := nsq.NewConsumer(handler.Topic(), handler.Channel(), cfg)
+	consumer, err := nsq.NewConsumer(topic, channel, cfg)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	consumer.AddConcurrentHandlers(&messageHandler{
 		mqHandler: handler,
@@ -37,9 +37,10 @@ func (c client) Consume(ctx context.Context, handler mq.Handler, concurrency int
 
 	err = consumer.ConnectToNSQLookupd(c.cfg.ConsumeAddress)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	<-ctx.Done()
+	return nil
 }
 
 func (c client) Push(ctx context.Context, msg mq.Message) error {

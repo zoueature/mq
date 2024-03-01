@@ -19,7 +19,7 @@ type Driver interface {
 }
 
 type MQ interface {
-	Consume(ctx context.Context, handler Handler, concurrency int)
+	Consume(ctx context.Context, topic, channel string, handler MessageHandler, concurrency int) error
 	Push(ctx context.Context, msg Message) error
 }
 
@@ -30,6 +30,8 @@ type ReceivedMessage interface {
 	GetBody() []byte
 	Unmarshal(container any) error
 }
+
+type MessageHandler func(receivedMessage ReceivedMessage) error
 
 // Message 用户发送的消息
 type Message interface {
@@ -55,41 +57,6 @@ func NewMessage(topic string, body []byte) Message {
 	return message{
 		topic: topic,
 		body:  body,
-	}
-}
-
-type Handler interface {
-	// Topic 所属topic
-	Topic() string
-	// Channel 所属channel， kafka相当于serverId
-	Channel() string
-	// HandleMessage 消息处理
-	HandleMessage(message ReceivedMessage) error
-}
-
-type handler struct {
-	topic   string
-	channel string
-	do      func(message ReceivedMessage) error
-}
-
-func (h handler) Topic() string {
-	return h.topic
-}
-
-func (h handler) Channel() string {
-	return h.channel
-}
-
-func (h handler) HandleMessage(message ReceivedMessage) error {
-	return h.do(message)
-}
-
-func NewHandler(topic, channel string, msgHandler func(message ReceivedMessage) error) Handler {
-	return handler{
-		topic:   topic,
-		channel: channel,
-		do:      msgHandler,
 	}
 }
 
