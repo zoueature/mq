@@ -22,7 +22,10 @@ func (h messageHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 func (h messageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
 		fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
-		h.handler(types.KafkaMessage(*msg))
+		err := h.handler(types.KafkaMessage(*msg))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
