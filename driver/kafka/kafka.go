@@ -44,6 +44,7 @@ func (c *client) Push(ctx context.Context, msg mq.Message) error {
 		Topic:     msg.Topic(),
 		Value:     sarama.ByteEncoder(msg.Body()),
 		Timestamp: time.Now(),
+		Key:       sarama.StringEncoder(msg.Key()),
 	})
 	return err
 }

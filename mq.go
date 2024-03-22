@@ -3,6 +3,7 @@ package mq
 import (
 	"context"
 	"github.com/zoueature/config"
+	"strings"
 )
 
 var driverMap = map[DriverId]Driver{}
@@ -37,12 +38,16 @@ type MessageHandler func(receivedMessage ReceivedMessage) error
 type Message interface {
 	// Topic 所属topic
 	Topic() string
+	// Body 具体消息内容
 	Body() []byte
+	// Key 唯一标识
+	Key() string
 }
 
 type message struct {
 	topic string
 	body  []byte
+	key   []string
 }
 
 func (m message) Topic() string {
@@ -52,11 +57,15 @@ func (m message) Topic() string {
 func (m message) Body() []byte {
 	return m.body
 }
+func (m message) Key() string {
+	return strings.Join(m.key, "-")
+}
 
-func NewMessage(topic string, body []byte) Message {
+func NewMessage(topic string, body []byte, key ...string) Message {
 	return message{
 		topic: topic,
 		body:  body,
+		key:   key,
 	}
 }
 
